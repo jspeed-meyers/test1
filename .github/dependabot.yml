@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Monitor pip dependencies for updates
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      # Check for updates daily
+      interval: "daily"
+      time: "09:00"
+    # Open pull requests for version updates
+    open-pull-requests-limit: 10
+    # Labels to apply to pull requests
+    labels:
+      - "dependencies"
+      - "python"
+    # Commit message preferences
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    # Allow both direct and indirect updates
+    # This will cause Dependabot to update individual dependencies
+    # which will break our tests due to API incompatibilities
+    versioning-strategy: increase

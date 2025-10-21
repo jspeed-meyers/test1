@@ -1,0 +1,16 @@
+# Pinned to old versions with known breaking changes in newer versions
+
+# Click 7.1.2 - Click 8.x has breaking changes:
+# - Parameter validation changed
+# - Context handling modified
+# - Some internal APIs restructured
+click==7.1.2
+
+# Requests 2.25.1 - newer versions have JSON handling changes
+requests==2.25.1
+
+# Pytest 6.2.5 - newer versions deprecated some fixtures and changed assertion behavior
+pytest==6.2.5
+
+# pytest-mock 3.6.1 - compatibility with pytest version
+pytest-mock==3.6.1
