@@ -1,14 +1,14 @@
 """
 String utilities library with click-based formatting.
 
-This module uses Click 7.x API which has breaking changes in 8.x.
-Specifically uses deprecated functions that were removed in Click 8.0.
+This module has been updated to work with Click 8.x.
+All deprecated APIs have been replaced with standard library equivalents.
 """
 
+import sys
+import shutil
 import click
 from click import style, echo
-from click.termui import get_terminal_size  # REMOVED in Click 8.0!
-from click.utils import get_os_args  # REMOVED in Click 8.0!
 
 
 def format_text(text, bold=False, fg=None):
@@ -24,25 +24,25 @@ def format_text(text, bold=False, fg=None):
 
 def get_terminal_width():
     """
-    Get terminal width using Click 7.x deprecated function.
+    Get terminal width using shutil (Click 8.0+ compatible).
 
-    Uses click.termui.get_terminal_size() which was REMOVED in Click 8.0.
+    In Click 7.x, this used click.termui.get_terminal_size() which was REMOVED in Click 8.0.
     Click 8.0+ requires using shutil.get_terminal_size() instead.
     """
-    # This function exists in Click 7.x but was removed in 8.0
-    width, height = get_terminal_size()
-    return width
+    # Use shutil.get_terminal_size() which is the standard library approach
+    terminal_size = shutil.get_terminal_size()
+    return terminal_size.columns
 
 
 def get_command_args():
     """
-    Get command-line arguments using Click 7.x deprecated function.
+    Get command-line arguments using sys.argv (Click 8.0+ compatible).
 
-    Uses click.utils.get_os_args() which was REMOVED in Click 8.0.
+    In Click 7.x, this used click.utils.get_os_args() which was REMOVED in Click 8.0.
     Click 8.0+ requires using sys.argv[1:] directly instead.
     """
-    # This function exists in Click 7.x but was removed in 8.0
-    return get_os_args()
+    # Use sys.argv[1:] which is the standard library approach
+    return sys.argv[1:]
 
 
 def parse_options(args):
@@ -89,12 +89,12 @@ def create_command_context():
     return ctx
 
 
-# Old-style parameter callback (deprecated in Click 2.0, removed in 8.0)
-def old_style_callback(ctx, value):
+# New-style parameter callback (Click 8.0+ compatible)
+def old_style_callback(ctx, param, value):
     """
-    Parameter callback using the old 2-arg format.
+    Parameter callback using the new 3-arg format.
 
-    This was deprecated since Click 2.0 and removed in Click 8.0.
+    In Click 7.x, callbacks could use 2-arg format (ctx, value).
     Click 8.0+ requires callbacks to accept (ctx, param, value).
     """
     return value.upper() if value else value
@@ -104,10 +104,10 @@ def old_style_callback(ctx, value):
 @click.option('--name', callback=old_style_callback, help='Name to process')
 def process_name_command(name):
     """
-    Command using old-style callback.
+    Command using new-style callback.
 
-    The callback parameter uses the deprecated 2-arg format which
-    breaks in Click 8.0.
+    The callback parameter uses the new 3-arg format (ctx, param, value)
+    which is required in Click 8.0+.
     """
     click.echo(f"Processed: {name}")
     return name
