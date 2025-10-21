@@ -8,7 +8,7 @@
 click==7.1.2
 
 # Requests 2.25.1 - newer versions have JSON handling changes
-requests==2.25.1
+requests==2.32.5
 
 # Pytest 6.2.5 - newer versions deprecated some fixtures and changed assertion behavior
 pytest==6.2.5
