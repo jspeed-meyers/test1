@@ -1,9 +1,10 @@
 # Pinned to old versions with known breaking changes in newer versions
 
 # Click 7.1.2 - Click 8.x has breaking changes:
-# - Parameter validation changed
-# - Context handling modified
-# - Some internal APIs restructured
+# - get_terminal_size() removed (use shutil.get_terminal_size())
+# - get_os_args() removed (use sys.argv[1:])
+# - Old-style 2-arg parameter callbacks removed
+# - Must use 3-arg callbacks: (ctx, param, value)
 click==7.1.2
 
 # Requests 2.25.1 - newer versions have JSON handling changes

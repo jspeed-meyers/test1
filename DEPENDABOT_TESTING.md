@@ -15,11 +15,11 @@ This is a simple Python utility library with:
 
 The project uses **old pinned versions** with known breaking changes:
 
-1. **Click 7.1.2** → Click 8.x has breaking changes:
-   - Context initialization API changed
-   - Parameter handling modified
-   - Command name/info handling restructured
-   - When Dependabot updates to 8.x, tests will fail
+1. **Click 7.1.2** → Click 8.x has **real breaking changes**:
+   - **Click 8.0+**: Old-style parameter callbacks (2-arg) removed - must use 3-arg format (ctx, param, value)
+   - **Click 8.1+**: `get_terminal_size()` removed from `click.termui` - must use `shutil.get_terminal_size()`
+   - **Click 8.1+**: `get_os_args()` removed from `click.utils` - must use `sys.argv[1:]`
+   - When Dependabot updates to 8.x, tests will fail with ImportError or TypeError
 
 2. **Requests 2.25.1** → Newer versions have changes:
    - JSON handling differences
@@ -32,13 +32,17 @@ The project uses **old pinned versions** with known breaking changes:
 
 ### How Tests Will Fail
 
-The test suite in `tests/test_stringutils.py` specifically relies on:
+The test suite in `tests/test_stringutils.py` specifically relies on Click 7.x deprecated APIs:
 
-1. **Click 7.x API patterns**: Tests check for specific Context behavior that changed in Click 8.x
-   - `test_context_creation()`: Checks `ctx.command.name` which has different behavior in 8.x
-   - `test_context_command_attribute()`: Tests Context internal structure that was reorganized
+1. **Click 7.x deprecated functions** (removed in 8.1):
+   - `test_get_terminal_size()`: Uses `click.termui.get_terminal_size()`
+   - `test_get_os_args()`: Uses `click.utils.get_os_args()`
+   - These will fail with `ImportError` in Click 8.1+
 
-2. **ANSI code generation**: Tests verify specific ANSI escape sequences from Click's styling that may differ between versions
+2. **Old-style parameter callbacks** (removed in 8.0):
+   - `test_command_with_old_callback()`: Uses 2-arg callback format `callback(ctx, value)`
+   - Click 8.0+ requires 3-arg format: `callback(ctx, param, value)`
+   - Will fail with `TypeError: takes 2 positional arguments but 3 were given`
 
 3. **Fixture patterns**: Uses pytest fixtures in ways that changed between pytest 6.x and 7.x
 
@@ -65,11 +69,17 @@ When Dependabot runs, it will:
 
 When Dependabot tries to update `click==7.1.2` to `click>=8.0.0`:
 
+**With Click 8.0.0:**
 ```
-FAILED tests/test_stringutils.py::TestCreateCommandContext::test_context_creation
+FAILED tests/test_stringutils.py::TestDeprecatedAPIs::test_command_with_old_callback
+TypeError: old_style_callback() takes 2 positional arguments but 3 were given
 ```
 
-The test will fail because Click 8.x changed how Context objects are initialized and how they store command metadata.
+**With Click 8.1.0+:**
+```
+ImportError: cannot import name 'get_terminal_size' from 'click.termui'
+ImportError: cannot import name 'get_os_args' from 'click.utils'
+```
 
 ## Testing Locally
 
@@ -79,14 +89,19 @@ pip install -r requirements.txt
 pytest tests/ -v
 ```
 
-All 11 tests should pass with the pinned versions.
+All 15 tests should pass with the pinned versions.
 
 To simulate what Dependabot will break:
 ```bash
-# Update click to latest
-pip install click --upgrade
+# Test with Click 8.0.0 (callback breaks)
+pip install click==8.0.0
 pytest tests/ -v
-# Tests will fail!
+# 1 test fails with TypeError
+
+# Test with Click 8.1.0+ (imports break)
+pip install click==8.1.0
+pytest tests/ -v
+# Tests fail to import with ImportError
 ```
 
 ## Purpose
