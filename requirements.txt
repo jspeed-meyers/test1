@@ -4,7 +4,7 @@
 # - Parameter validation changed
 # - Context handling modified
 # - Some internal APIs restructured
-click==7.1.2
+click==8.0.0
 
 # Requests 2.25.1 - newer versions have JSON handling changes
 requests==2.25.1
