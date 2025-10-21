@@ -99,7 +99,8 @@ class TestCreateCommandContext:
         ctx = create_command_context()
         assert isinstance(ctx, Context)
         # This assertion relies on Click 7.x internals
-        assert ctx.info_name == 'dummy'
+        # In Click 7.x, info_name may be None by default
+        assert ctx.command.name == 'dummy'
 
     def test_context_command_attribute(self):
         """
