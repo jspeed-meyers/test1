@@ -3,17 +3,24 @@ Tests for stringutils module.
 
 These tests are written to work with Click 7.1.2 and pytest 6.2.5.
 They will break when dependencies are updated by Dependabot due to:
-1. Click 8.x API changes (Context, style behavior)
-2. Pytest 7.x deprecations and assertion changes
+1. Click 8.x removed deprecated APIs (get_terminal_size, get_os_args)
+2. Click 8.x removed old-style parameter callbacks
+3. Pytest 7.x deprecations and assertion changes
 """
 
 import pytest
+import sys
 from click import Context, Command
+from click.testing import CliRunner
 from stringutils import (
     format_text,
     parse_options,
     echo_styled,
-    create_command_context
+    create_command_context,
+    get_terminal_width,
+    get_command_args,
+    process_name_command,
+    old_style_callback
 )
 
 
@@ -111,6 +118,67 @@ class TestCreateCommandContext:
         ctx = create_command_context()
         assert hasattr(ctx, 'command')
         assert isinstance(ctx.command, Command)
+
+
+class TestDeprecatedAPIs:
+    """
+    Test Click 7.x deprecated APIs that were REMOVED in Click 8.0.
+
+    These tests will FAIL with Click 8.x because the functions no longer exist.
+    """
+
+    def test_get_terminal_size(self):
+        """
+        Test click.termui.get_terminal_size() - REMOVED in Click 8.0.
+
+        Click 7.x: click.termui.get_terminal_size() exists
+        Click 8.x: Function removed, must use shutil.get_terminal_size()
+        """
+        width = get_terminal_width()
+        assert isinstance(width, int)
+        assert width > 0
+
+    def test_get_os_args(self):
+        """
+        Test click.utils.get_os_args() - REMOVED in Click 8.0.
+
+        Click 7.x: click.utils.get_os_args() exists
+        Click 8.x: Function removed, must use sys.argv[1:] directly
+        """
+        # This will fail in Click 8.0 with ImportError
+        args = get_command_args()
+        assert isinstance(args, list)
+
+    def test_old_style_callback_function(self):
+        """
+        Test old-style parameter callback (2 args) - REMOVED in Click 8.0.
+
+        Click 7.x: Callbacks can accept (ctx, value)
+        Click 8.x: Callbacks must accept (ctx, param, value)
+        """
+        # Test the callback directly
+        ctx = create_command_context()
+        result = old_style_callback(ctx, "test")
+        assert result == "TEST"
+
+    def test_command_with_old_callback(self):
+        """
+        Test command using old-style callback - BREAKS in Click 8.0.
+
+        The old 2-arg callback format was deprecated in Click 2.0
+        and removed in Click 8.0.
+        """
+        runner = CliRunner()
+        # This will work in Click 7.x but fail in 8.0
+        result = runner.invoke(process_name_command, ['--name', 'john'])
+        # In Click 8.0+, this will fail with TypeError about callback signature
+        if result.exit_code != 0:
+            print(f"Command failed with exit code {result.exit_code}")
+            print(f"Output: {result.output}")
+            if result.exception:
+                print(f"Exception: {result.exception}")
+        assert result.exit_code == 0, f"Command failed: {result.output}"
+        assert 'JOHN' in result.output
 
 
 # Using pytest.fixture decorator in a way that changed between versions
