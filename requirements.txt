@@ -5,7 +5,7 @@
 # - get_os_args() removed (use sys.argv[1:])
 # - Old-style 2-arg parameter callbacks removed
 # - Must use 3-arg callbacks: (ctx, param, value)
-click==7.1.2
+click==8.3.0
 
 # Requests 2.25.1 - newer versions have JSON handling changes
 requests==2.25.1
